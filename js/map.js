@@ -146,8 +146,6 @@ similarListElement.appendChild(fragmentOfferAd); //отрисовуем карт
 
 /**---------------------------------------------------- EVENTS ------------------------------------------------------------------------------------------  */
 
-var ESC_KEYCODE = 27;
-var ENTER_KEYCODE = 13;
 var pinMapMain = document.querySelector(".map__pin--main");
 var allSelects = document.querySelectorAll("select");
 var classMap = document.querySelector(".map");
@@ -156,33 +154,15 @@ var popupsCard = document.querySelectorAll(".popup"); //выбираем кар�
 var fieldsSet = document.querySelectorAll("fieldset");
 var elementsPinActive = document.getElementsByClassName("map__pin--active");  //выбираем активные пины
 
-var onPopupEscPress = function (evt) {
-    document.addEventListener('keydown', function (evt) {
-        if(evt.keyCode === ESC_KEYCODE){
-            for(var i = 0; i < popupsCard.length; i++ ){
-                popupsCard[i].classList.add('hidden');
-            }
-            removeClassActivePins(elementsPinActive);
-        }
-    });
-};
-
-var openPopup = function (where) {
-    where.classList.remove("hidden");
-    document.addEventListener('keydown', onPopupEscPress);
-};
-var closePopup = function (where) {
-    where.classList.add("hidden");
-    document.removeEventListener('keydown', onPopupEscPress);
-};
 
 var addClass = function (where, className) {
     document.querySelector("." + where).classList.add(className);
 };
 
-var removeClassActivePins = function(arr){
-    for(i = 0; i < arr.length; i++){
-        arr[i].classList.remove("map__pin--active"); //удаляем активные пины
+var removeClassActivePins = function(){
+
+    for(i = 0; i < elementsPinActive.length; i++){
+        elementsPinActive[i].classList.remove("map__pin--active"); //удаляем активные пины
     }
 };
 
@@ -216,7 +196,7 @@ classMap.addEventListener("click", function (evt) {
 
     if( elementTargetParent.classList.contains("map__pin") ){
 
-        removeClassActivePins(elementsPinActive);
+        removeClassActivePins();
 
         var i;
         for(i = 0; i < popupsCard.length; i++){
@@ -252,15 +232,11 @@ classMap.addEventListener("click", function (evt) {
     /**   закритые карточки обьявления, конец    */
 });
 
-
-
-
-
 for(var i = 0; i < pinsMap.length; i++){
     /** открываем карточку обьявления при нажатии Enter, начало */
     pinsMap[i].addEventListener("keydown", function (evt) {
         if(evt.keyCode === ENTER_KEYCODE ){
-            removeClassActivePins(elementsPinActive); //удаляем активные пины
+            removeClassActivePins(); //удаляем активные пины
 
             for(i = 0; i < popupsCard.length; i++){
                 if(!popupsCard[i].classList.contains("hidden")){
