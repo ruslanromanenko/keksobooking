@@ -14,7 +14,6 @@
         "house": "Дом",
         "bungalo": "Бунгало"
     }
-
     var similarAds = [];
 
     var getRandomNum = function (min, max){
@@ -82,24 +81,6 @@
             }
         }
     }
-    var similarListElement = document.querySelector(".map__pins"); // выбираем в какой фрагмент кода нужно вставлять елементы
-
-    /**  создем  маркеры на карте, начало */
-    var fragmentAd = document.createDocumentFragment();
-    var similarAdTemplate = document.querySelector("template").content.querySelector(".map__pin");  // выбираем фрагмент кода из темплейта который нужно клонировать
-
-    var renderAd = function (ad) {
-        var adElement = similarAdTemplate.cloneNode(true); // создаем новый елемент обьявления
-        adElement.style.left =  ad.location.x + "px";  // меняем координату x
-        adElement.style.top =  ad.location.y + "px";    // меняем координату y
-        adElement.querySelector("img").src =  ad.author.avatar; // меняем аватарку на кнопке
-        adElement.classList.add("hidden");
-        return adElement;
-    }
-
-    // similarListElement.appendChild(fragmentAd); // отрисовуем все созданые елементы в выбраном месте(map__pins)
-    /**  создем  маркеры на карте, конец */
-
     /** создаем карточку обяьвления, начало */
     var articleCardTemplate = document.querySelector("template").content.querySelector(".map__card");
 
@@ -138,11 +119,11 @@
     };
 
     for(var i = 0; i < similarAds.length; i++){
-        fragmentAd.appendChild( renderAd(similarAds[i]) ); //создаем нужное количество пинов на карте
+        window.pins.fragment.appendChild( window.pins.render(similarAds[i]) ); //создаем нужное количество пинов на карте
         fragmentOfferAd.appendChild( renderArticleCard(similarAds[i]) ); //создаем нужное количество карточек
     }
-    similarListElement.appendChild(fragmentAd); //отрисовуем пины на карте
-    similarListElement.appendChild(fragmentOfferAd); //отрисовуем карточку обьявления
+    window.pins.areaPins.appendChild(window.pins.fragment); //отрисовуем пины на карте
+    window.pins.areaPins.appendChild(fragmentOfferAd); //отрисовуем карточку обьявления
     /** создаем карточку обяьвления, конец */
 
     /**---------------------------------------------------- EVENTS ------------------------------------------------------------------------------------------  */
@@ -152,19 +133,7 @@
     var pinsMap = document.querySelectorAll(".map__pin");
     var popupsCard = document.querySelectorAll(".popup"); //выбираем карточкы обявления
     var fieldsSet = document.querySelectorAll("fieldset");
-    var elementsPinActive = document.getElementsByClassName("map__pin--active");  //выбираем активные пины
 
-    var removeClassActivePins = function(){
-
-        for(i = 0; i < elementsPinActive.length; i++){
-            elementsPinActive[i].classList.remove("map__pin--active"); //удаляем активные пины
-        }
-    };
-
-
-    window.pins = {
-        deactivate: removeClassActivePins,
-    };
 
     for(var i = 0; i < allSelects.length; i++){
         addStyle(allSelects[i], "pointerEvents", "none"); // делаем неактивными все селекты
@@ -178,7 +147,7 @@
         for(var i = 0; i < fieldsSet.length; i++){
             var itemFieldSet = fieldsSet[i];
             removeAtrtibute(itemFieldSet, "disabled");
-        };
+        }
 
         for(var i = 0; i < pinsMap.length; i++){
             window.popup.openPopup(pinsMap[i]);                  //показываем на карте все пины
@@ -189,14 +158,12 @@
         }
     });
 
-
-
     classMap.addEventListener("click", function (evt) {
         var elementTargetParent = evt.target.parentElement; // выбираем родителя елемента по которому кликнули
 
         if( elementTargetParent.classList.contains("map__pin") ){
 
-            removeClassActivePins();
+            window.pins.deactivate();
 
             var i;
             for(i = 0; i < popupsCard.length; i++){
@@ -217,8 +184,8 @@
         /**   закритые карточки обьявления, начало    */
 
         if(evt.target.classList.contains("popup__close")){
-            for(i = 0; i < elementsPinActive.length; i++){
-                elementsPinActive[i].classList.remove("map__pin--active");
+            for(i = 0; i < window.pins.length; i++){
+                window.pins[i].classList.remove("map__pin--active");
             }
 
             var containsHidden = "";
@@ -236,7 +203,8 @@
         /** открываем карточку обьявления при нажатии Enter, начало */
         pinsMap[i].addEventListener("keydown", function (evt) {
             if(evt.keyCode === window.constants.KeyCode.ENTER ){
-                removeClassActivePins(); //удаляем активные пины
+
+                window.pins.deactivate(); //удаляем активные пины
 
                 for(i = 0; i < popupsCard.length; i++){
                     if(!popupsCard[i].classList.contains("hidden")){
@@ -258,10 +226,7 @@
             }
         });
         /** открываем карточку обьявления при нажатии Enter, конец */
-
     }
-
-
 
     /** событие при отпускании клавиши Enter на главном пине, начало */
     pinMapMain.addEventListener( "keyup", function (evt) {    //событие при отпускании кнопки мыши на главном маркете
@@ -286,66 +251,5 @@
     });
 
     /** событие при отпускании клавиши Enter на главном пине, конец */
-
-    /**------------------------------------------------------------- работа с формой -----------------------------------------------------*/
-
-    /**  зависимость минимальной цены от типа жилья, начало */
-    var typeHousing = document.getElementById("type");
-    var priceNight = document.getElementById("price");
-
-    typeHousing.onchange = function() {
-        switch (this.value) {
-            case "flat":
-                priceNight.min = 1000;
-                break;
-            case "bungalo":
-                priceNight.min =  0;
-                break;
-            case "house":
-                priceNight.min = 5000;
-                break;
-            case "palace":
-                priceNight.min = 10000;
-                break;
-        }
-    };
-    /**  зависимость минимальной цены от типа жилья, конец */
-
-
-    var timeIn = document.getElementById("timein");
-    var timeOut = document.getElementById("timeout");
-    var roomNumber = document.getElementById("room_number");
-    var capacity = document.getElementById("capacity");
-
-    document.querySelector(".notice__form").addEventListener("change", function (evt) {
-
-        /** синхронизация время заезда и выезда, начало **/
-        if(evt.target.id === "timein" ){
-            timeOut.value = timeIn.value;
-        }
-        if(evt.target.id === "timeout"){
-            timeIn.value = timeOut.value;
-        }
-        /** синхронизация время заезда и выезда, конец **/
-
-        /** синхронизация количества комнат и гостей, начало **/
-        if(evt.target.id === "room_number"){
-            switch (roomNumber.value) {
-                case "1":
-                    capacity.value = "1";
-                    break;
-                case "2":
-                    capacity.value =  "2";
-                    break;
-                case "3":
-                    capacity.value = "3";
-                    break;
-                case "100":
-                    capacity.value = "0";
-                    break;
-            }
-        }
-        /** синхронизация количества комнат и гостей, конец **/
-    });
 
 })();
