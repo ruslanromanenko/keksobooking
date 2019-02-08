@@ -1,21 +1,31 @@
 'use strict';
-var ENTER_KEYCODE = 13;
 
-var onPopupEscPress = function (evt) {
-        if(evt.keyCode === window.constants.KeyCode.ESC){
-
-            for(var i = 0; i < popupsCard.length; i++ ){
-                popupsCard[i].classList.add('hidden');
-            }
-            removeClassActivePins();
+(function () {
+    var close = function () {
+        window.pins.deactivate();
+        for(var i = 0; i < window.data.selections.popupsCard.length; i++ ){
+            window.data.selections.popupsCard[i].classList.add('hidden');
         }
     };
 
-var openPopup = function (where) {
-    where.classList.remove("hidden");
-    document.addEventListener('keydown', onPopupEscPress);
-};
-var closePopup = function (where) {
-    where.classList.add("hidden");
-    document.removeEventListener('keydown', onPopupEscPress);
-};
+    var onPopupEscPress = function (evt) {
+        if(evt.keyCode === window.constants.KeyCode.ESC){
+            close();
+        }
+    };
+
+    var openPopup = function (where) {
+        where.classList.remove("hidden");
+        document.addEventListener('keydown', onPopupEscPress);
+    };
+
+    var closePopup = function (where) {
+        where.classList.add("hidden");
+        document.addEventListener('keydown', onPopupEscPress);
+    };
+
+    window.popup = {
+      openPopup: openPopup,
+      closePopup: closePopup
+    };
+})();
