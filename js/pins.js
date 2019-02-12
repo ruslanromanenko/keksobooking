@@ -3,7 +3,6 @@
 (function () {
 
     var similarListElement = document.querySelector(".map__pins"); // выбираем в какой фрагмент кода нужно вставлять елементы
-
     var elementsPinActive = document.getElementsByClassName("map__pin--active");  //выбираем активные пины
 
     var removeClassActivePins = function(){
@@ -26,6 +25,9 @@
     };
 
     /**  создем  маркеры на карте, конец */
+
+
+
 
     window.pins = {
         deactivate: removeClassActivePins,

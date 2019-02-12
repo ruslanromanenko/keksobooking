@@ -8,12 +8,6 @@
     var OFFER_CHECKINS = ["12:00", "13:00", "14:00"];
     var OFFER_CHECKOUTS = ["12:00", "13:00", "14:00"];
     var OFFER_FEATURES = ["wifi", "dishwasher", "parking", "washer", "elevator", "conditioner"];
-
-    var OFFER_TYPES_RUSSIA = {
-        "flat": "Квартира",
-        "house": "Дом",
-        "bungalo": "Бунгало"
-    }
     var similarAds = [];
 
     var getRandomNum = function (min, max){
@@ -81,53 +75,18 @@
             }
         }
     }
-    /** создаем карточку обяьвления, начало */
-    var articleCardTemplate = document.querySelector("template").content.querySelector(".map__card");
 
-    var fragmentOfferAd = document.createDocumentFragment();
-    var renderArticleCard = function (offerAd) {
-        var articleItem = articleCardTemplate.cloneNode(true);
-        articleItem.classList.add("hidden");
-        articleItem.querySelector("h3").textContent = offerAd.offer.title;
-        articleItem.querySelector("p>small").textContent = offerAd.offer.address;
-        articleItem.querySelector(".popup__price").textContent = offerAd.offer.price + "\u20BD/ночь";
-        articleItem.querySelector("h4").textContent = OFFER_TYPES_RUSSIA[offerAd.offer.type];
-        articleItem.querySelectorAll("p")[2].textContent = offerAd.offer.rooms + " комнаты для " + offerAd.offer.guests + " гостей";
-        articleItem.querySelectorAll("p")[3].textContent = "Заезд после " + offerAd.offer.checkin + ", выезд до" + offerAd.offer.checkout;
-        /* features, start */
-        var featureElements = articleItem.querySelectorAll(".popup__features li");
-        var lengthFeaturesArray = featureElements.length;
-        for(var i = 0; i < lengthFeaturesArray; i++ ){
-            var currentElement = featureElements[i];
-            var currentElementClass = currentElement.classList[1].split("--")[1];
-
-            if( offerAd.offer.features.indexOf(currentElementClass) === -1 ){
-                currentElement.remove();
-            };
-        }
-        /* features, end */
-        articleItem.querySelectorAll("p")[4].textContent = offerAd.offer.description;
-
-        var srcAvatar = articleItem.querySelector(".popup__avatar").src = offerAd.author.avatar;
-
-        var nameImage = srcAvatar.substring(srcAvatar.lastIndexOf("/") + 1);
-        var idFromImg = nameImage.split(".")[0];
-
-        articleItem.id = idFromImg; // добавляем id к карточке
-
-        return articleItem;
-    };
 
     for(var i = 0; i < similarAds.length; i++){
         window.pins.fragment.appendChild( window.pins.render(similarAds[i]) ); //создаем нужное количество пинов на карте
-        fragmentOfferAd.appendChild( renderArticleCard(similarAds[i]) ); //создаем нужное количество карточек
+        window.card.fragmentOfferAd.appendChild( window.card.renderArticleCard(similarAds[i]) ); //создаем нужное количество карточек
     }
     window.pins.areaPins.appendChild(window.pins.fragment); //отрисовуем пины на карте
-    window.pins.areaPins.appendChild(fragmentOfferAd); //отрисовуем карточку обьявления
-    /** создаем карточку обяьвления, конец */
+    window.pins.areaPins.appendChild(window.card.fragmentOfferAd); //отрисовуем карточку обьявления
+
 
     /**---------------------------------------------------- EVENTS ------------------------------------------------------------------------------------------  */
-    var pinMapMain = document.querySelector(".map__pin--main");
+    
     var allSelects = document.querySelectorAll("select");
     var classMap = document.querySelector(".map");
     var pinsMap = document.querySelectorAll(".map__pin");
@@ -140,7 +99,7 @@
     }
     addAtrtibute("fieldset", "disabled", "disabled", true); // делаем неактивнымы все поля формы
 
-    pinMapMain.addEventListener( "mouseup", function (evt) {    //событие при отпускании кнопки мыши на главном маркете
+    window.data.selections.pinMapMain.addEventListener( "mouseup", function (evt) {    //событие при отпускании кнопки мыши на главном маркете
         classMap.classList.remove("map--faded");
         document.querySelector(".notice__form").classList.remove("notice__form--disabled");
 
@@ -229,7 +188,7 @@
     }
 
     /** событие при отпускании клавиши Enter на главном пине, начало */
-    pinMapMain.addEventListener( "keyup", function (evt) {    //событие при отпускании кнопки мыши на главном маркете
+    window.data.selections.pinMapMain.addEventListener( "keyup", function (evt) {    //событие при отпускании кнопки мыши на главном маркете
         if(evt.keyCode === window.constants.KeyCode.ENTER){
             classMap.classList.remove("map--faded");
 
@@ -249,7 +208,116 @@
             }
         }
     });
-
     /** событие при отпускании клавиши Enter на главном пине, конец */
+
+
+    /**  поведение главноего пина на мапе, начало **/
+
+    var pinMapMain = window.data.selections.pinMapMain;
+    var overlayElem = document.querySelector('.map__pinsoverlay');
+    var NEEDLE_HEIGHT = 22;
+    var USER_PIN_NEEDLE_POSITION = pinMapMain.offsetWidth / 2;
+    var USER_PIN_HEIGHT = pinMapMain.offsetHeight + NEEDLE_HEIGHT;
+
+
+    // var PIN_LIMITS = {
+    //     y: {
+    //         top: 100,
+    //         /** Нижний предел рассчитывается через
+    //          *  высоту отца - высоту таскаемого элемента - 500 */
+    //         bottom: overlayElem.offsetHeight - pinMapMain.offsetHeight - 500
+    //     }
+    // };
+    //
+    // var getPinMainElemPosition = function () {
+    //     return {
+    //         x: pinMapMain.offsetLeft,
+    //         y: pinMapMain.offsetTop
+    //     };
+    // };
+    //
+    //
+    // /**
+    //  * Получает координаты пина, вычисляет координаты иголки пина, передает их в поле адреса
+    //  * @param {Object} position
+    //  */
+    // var getPinElemNeedleCoords = function (position) {
+    //     var updatedCoords = {
+    //         x: position.x + USER_PIN_NEEDLE_POSITION,
+    //         y: position.y + USER_PIN_HEIGHT
+    //     };
+    //
+    //     // window.forms.onCoordsChange(updatedCoords);
+    // };
+    //
+    // var setAddressCoords = function () {
+    //     getPinElemNeedleCoords(getPinMainElemPosition());
+    // };
+
+    // function getCoords(elem) {   // кроме IE8-
+    //     var box = elem.getBoundingClientRect();
+    //     return {
+    //         top: box.top + pageYOffset,
+    //         left: box.left + pageXOffset
+    //     };
+    // }
+    //
+    // var ball = document.getElementsByClassName('map__pin--main')[0];
+    //
+    // ball.onmousedown = function(e) {
+    //
+    //     var coords = getCoords(ball);
+    //     var shiftX = e.pageX - coords.left;
+    //     var shiftY = e.pageY - coords.top;
+    //
+    //     ball.style.position = 'absolute';
+    //     moveAt(e);
+    //
+    //     ball.style.zIndex = 1000; // над другими элементами
+    //
+    //     function moveAt(e) {
+    //         ball.style.left = e.pageX - shiftX + 'px';
+    //         ball.style.top = e.pageY - shiftY + 'px';
+    //     }
+    //
+    //     document.onmousemove = function(e) {
+    //         moveAt(e);
+    //     };
+    //
+    //     ball.onmouseup = function() {
+    //         document.onmousemove = null;
+    //         ball.onmouseup = null;
+    //     };
+    //
+    // }
+    //
+    // ball.ondragstart = function() {
+    //     return false;
+    // };
+
+
+    pinMapMain.addEventListener("mousedown", function (evt) {
+        evt.preventDefault();
+        const shift = {
+            x: evt.pageX - evt.currentTarget.offsetLeft,
+            y: evt.pageY - evt.currentTarget.offsetTop,
+        };
+
+        var onMouseMove = function(moveEvt){
+            moveEvt.preventDefault();
+            pinMapMain.style.left = moveEvt.pageX - shift.x + 'px';
+            pinMapMain.style.top = moveEvt.pageY - shift.y + 'px';
+
+        };
+
+        var onMouseUp = function(upEvt){
+            document.removeEventListener("mousemove", onMouseMove);
+            document.removeEventListener("mouseup", onMouseUp);
+        };
+
+        document.addEventListener("mousemove", onMouseMove);
+        document.addEventListener("mouseup", onMouseUp);
+    });
+    /**  поведение главноего пина на мапе, конец **/
 
 })();
